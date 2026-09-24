@@ -9,4 +9,5 @@ RUN npm run build -w web
 
 FROM nginx:1.27-alpine
 COPY --from=build /app/web/dist /usr/share/nginx/html
+COPY web/nginx.conf /etc/nginx/conf.d/default.conf
 EXPOSE 80
