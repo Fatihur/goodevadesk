@@ -1,0 +1,87 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum TicketCategory {
+  billing
+  technical
+  general
+}
+
+enum TicketStatus {
+  open
+  in_progress
+  closed
+}
+
+enum UserRole {
+  admin
+  agent
+}
+
+model Organization {
+  id        String    @id @default(uuid()) @db.Uuid
+  name      String
+  apiKey    String    @unique @map("api_key")
+  tickets   Ticket[]
+  users     User[]
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  @@map("organizations")
+}
+
+model Ticket {
+  id             String          @id @default(uuid()) @db.Uuid
+  organizationId String          @map("organization_id") @db.Uuid
+  organization   Organization    @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  customerEmail  String          @map("customer_email")
+  subject        String
+  message        String          @db.Text
+  category       TicketCategory?
+  suggestedReply String?         @map("suggested_reply") @db.Text
+  status         TicketStatus    @default(open)
+  createdAt      DateTime        @default(now()) @map("created_at")
+  updatedAt      DateTime        @updatedAt @map("updated_at")
+
+  @@index([organizationId])
+  @@index([organizationId, status])
+  @@index([organizationId, category])
+  @@index([organizationId, createdAt])
+  @@map("tickets")
+}
+
+model User {
+  id             String       @id @default(uuid()) @db.Uuid
+  organizationId String       @map("organization_id") @db.Uuid
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  email          String
+  passwordHash   String       @map("password_hash")
+  name           String
+  role           UserRole     @default(agent)
+  sessions       Session[]
+  createdAt      DateTime     @default(now()) @map("created_at")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
+
+  @@unique([organizationId, email])
+  @@index([organizationId, role])
+  @@map("users")
+}
+
+model Session {
+  id        String   @id @default(uuid()) @db.Uuid
+  tokenHash String   @unique @map("token_hash")
+  userId    String   @map("user_id") @db.Uuid
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("sessions")
+}

@@ -1,0 +1,23 @@
+{
+  "name": "goodevadesk",
+  "version": "0.1.0",
+  "private": true,
+  "description": "GoodevaDesk multi-tenant support ticketing with LLM enrichment and dashboard",
+  "workspaces": ["api", "web"],
+  "scripts": {
+    "dev": "concurrently -n api,web -c blue,green \"npm run start:dev -w api\" \"npm run dev -w web\"",
+    "build": "npm run build -w api && npm run build -w web",
+    "lint": "npm run lint -w api && npm run lint -w web",
+    "format": "prettier --write .",
+    "typecheck": "npm run typecheck -w api && npm run typecheck -w web",
+    "test": "npm run test -w api",
+    "db:generate": "npm run prisma:generate -w api",
+    "db:migrate": "npm run prisma:migrate -w api",
+    "db:deploy": "npm run prisma:deploy -w api",
+    "db:seed": "npm run prisma:seed -w api"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1",
+    "prettier": "^3.6.2"
+  }
+}
