@@ -8,8 +8,9 @@ import { TicketsModule } from './tickets/tickets.module';
 import { AuthModule } from './auth/auth.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { HealthModule } from './health/health.module';
+import { UsersModule } from './users/users.module';
 
 @Module({
-  imports: [ConfigModule.forRoot({ isGlobal: true }), PrismaModule, RedisModule, OrganizationsModule, LlmModule, TicketsModule, AuthModule, DashboardModule, HealthModule],
+  imports: [ConfigModule.forRoot({ isGlobal: true }), PrismaModule, RedisModule, OrganizationsModule, LlmModule, TicketsModule, AuthModule, DashboardModule, HealthModule, UsersModule],
 })
 export class AppModule {}

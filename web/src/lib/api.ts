@@ -20,6 +20,14 @@ export interface Ticket {
   createdAt: string;
 }
 
+export interface TeamUser {
+  id: string;
+  email: string;
+  name: string;
+  role: 'admin' | 'agent';
+  createdAt: string;
+}
+
 const baseUrl = import.meta.env.VITE_API_BASE_URL ?? '/api';
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
@@ -44,4 +52,6 @@ export const api = {
   tickets: (params: URLSearchParams) => request<{ data: Ticket[]; meta: { page: number; limit: number; total: number; total_pages: number } }>(`/tickets?${params}`),
   ticket: (id: string) => request<Ticket>(`/tickets/${id}`),
   updateStatus: (id: string, status: TicketStatus) => request<Ticket>(`/tickets/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) }),
+  users: () => request<TeamUser[]>('/users'),
+  createUser: (input: { name: string; email: string; password: string; role: 'agent' | 'admin' }) => request<TeamUser>('/users', { method: 'POST', body: JSON.stringify(input) }),
 };
