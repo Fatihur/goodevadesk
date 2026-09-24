@@ -13,6 +13,7 @@ ENV NODE_ENV=production
 COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/api/dist ./api/dist
 COPY --from=build /app/api/prisma ./prisma
+COPY --from=build /app/api/prisma ./api/prisma
 COPY --from=build /app/api/package.json ./api/package.json
 EXPOSE 3000
 CMD ["node", "api/dist/src/main.js"]
