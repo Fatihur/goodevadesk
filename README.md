@@ -63,6 +63,9 @@ The organization API key is used with the `x-api-key` header for integration end
 - `admin` and `agent` roles.
 - Ticket list, search, filtering, details, status updates, dashboard summary, and team management.
 - Health checks, Swagger/OpenAPI documentation, Docker Compose deployment, and CI validation.
+- Admin organization settings, one-time API-key rotation, profile view, and user role management.
+- OpenAPI-driven, same-origin API Playground with in-memory credentials and JSON validation.
+- Optional dependency-free Python NLP utility for offline category classification and email/phone extraction.
 
 ## Architecture
 
@@ -147,8 +150,17 @@ Dashboard requests authenticate through the session cookie created by `POST /api
 | GET | `/api/dashboard/summary` | Authenticated users |
 | GET | `/api/users` | Admin only |
 | POST | `/api/users` | Admin only |
+| PATCH | `/api/users/:id` | Admin only |
+| DELETE | `/api/users/:id` | Admin only |
+| GET | `/api/organizations/me` | Admin only |
+| PATCH | `/api/organizations/me` | Admin only |
+| POST | `/api/organizations/me/api-key/rotate` | Admin only |
 
 The API returns camelCase response fields such as `customerEmail` and `suggestedReply`. The ticket creation request follows the integration contract and accepts `customer_email`, `subject`, and `message`.
+
+### Web application routes
+
+The dashboard provides `/login`, `/dashboard`, `/tickets`, `/tickets/:ticketId`, `/playground`, `/profile`, `/users` (also available as `/team`), and admin settings at `/settings/organization` and `/settings/api-key` (also available from `/settings`). The Playground fetches `/api/openapi.json`, keeps the entered organization key in component memory, limits requests to the documented ticket paths, and generates examples with the `$GOODEVA_API_KEY` placeholder.
 
 ## LLM and cache behavior
 
@@ -163,6 +175,8 @@ For each new ticket:
 5. The JSON is parsed and validated with Zod before it is stored.
 6. Retryable network, rate-limit, and server errors are retried with bounded exponential backoff.
 7. Provider or validation failures leave the ticket available with null enrichment fields.
+
+The production prompt is deliberately narrow: the model receives the ticket subject and message as untrusted text and is asked to return only a JSON object with `category` and `suggestedReply`. This keeps the persisted result predictable and avoids letting ticket text redefine the task. The Kenari deployment uses the OpenAI-compatible adapter because its `/v1` contract matches the provider interface while retaining the same Zod validation and failure behavior.
 
 The cache key is based on the normalized subject and message, not on a customer identity. The default cache TTL is 2,592,000 seconds (30 days) and can be changed with `CACHE_TTL_SECONDS`.
 
@@ -234,6 +248,8 @@ Copy `.env.example` to `.env` and adjust the values for the target environment.
 | `SESSION_SECRET` | Secret used to protect dashboard sessions |
 | `SESSION_TTL_SECONDS` | Session lifetime |
 | `CORS_ORIGIN` | Allowed dashboard origin |
+| `BODY_LIMIT` | Maximum JSON request body size, default `100kb` |
+| `RATE_LIMIT_MAX` | Requests per minute per client, default `60` |
 | `VITE_API_BASE_URL` | API base URL used by the web app |
 
 For production-only seeding, use `SEED_PRODUCTION`, `SEED_ADMIN_EMAIL`, `SEED_ADMIN_PASSWORD`, `SEED_ADMIN_NAME`, `SEED_ORG_NAME`, and `SEED_ORG_API_KEY` on the server. Remove or rotate temporary seed credentials after first login.
@@ -303,11 +319,14 @@ npm run lint
 npm run typecheck
 npm run build
 npm test
+npm run test:e2e
+python -m pip install -e "./python[test]"
+python -m pytest python/tests
 ```
 
-The GitHub Actions workflow in `.github/workflows/ci.yml` installs dependencies, generates Prisma Client, runs type checking, builds both workspaces, and runs the test suite.
+The GitHub Actions workflow in `.github/workflows/ci.yml` installs dependencies, generates Prisma Client, runs type checking, builds both workspaces, runs unit, frontend, and API e2e tests, and verifies the optional Python package.
 
-Current tests cover core API behavior and LLM/cache paths. Add broader integration and end-to-end coverage as the product surface grows.
+Current tests cover LLM/cache behavior, tenant-scoped ticket access, validation, frontend Playground helpers, and Python NLP behavior.
 
 ## Security notes
 
@@ -318,12 +337,10 @@ Current tests cover core API behavior and LLM/cache paths. Add broader integrati
 - Rotate API keys, session secrets, and admin passwords if they are ever exposed.
 - Treat ticket subject and message content as untrusted input. The LLM prompt explicitly asks the model to return only the required schema.
 
-## Current limitations
+## Scope boundaries
 
-- Admin team management currently supports listing and creating users; update and delete workflows are not implemented.
-- There is no built-in rate limiter yet.
-- Request logging and operational observability are intentionally lightweight.
-- The Playground endpoint registry is manually maintained.
+- The optional Python NLP module is an offline value-add and is not a second production inference service.
+- Request logging is structured and intentionally lightweight; a full metrics/tracing platform is outside this submission.
 - Billing, subscriptions, queue workers, vector search, customer self-service, and realtime chat are outside the current scope.
 
 ## License

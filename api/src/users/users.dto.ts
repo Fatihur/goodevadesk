@@ -17,3 +17,23 @@ export class CreateUserDto {
   @IsEnum(UserRole)
   role?: UserRole;
 }
+
+export class UpdateUserDto {
+  @IsOptional()
+  @IsEmail()
+  email?: string;
+
+  @IsOptional()
+  @IsString()
+  @MinLength(2)
+  name?: string;
+
+  @IsOptional()
+  @IsString()
+  @MinLength(12)
+  password?: string;
+
+  @IsOptional()
+  @IsEnum(UserRole)
+  role?: UserRole;
+}

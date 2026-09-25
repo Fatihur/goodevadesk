@@ -28,6 +28,13 @@ export interface TeamUser {
   createdAt: string;
 }
 
+export interface OrganizationSettings {
+  id: string;
+  name: string;
+  apiKey: string;
+  createdAt: string;
+}
+
 const baseUrl = import.meta.env.VITE_API_BASE_URL ?? '/api';
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
@@ -48,10 +55,15 @@ export const api = {
   me: () => request<User>('/auth/me'),
   login: (email: string, password: string) => request<User>('/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) }),
   logout: () => request<{ ok: boolean }>('/auth/logout', { method: 'POST' }),
-  summary: () => request<{ total: number; open: number; in_progress: number; closed: number; recent: Ticket[] }>('/dashboard/summary'),
+  summary: () => request<{ total: number; open: number; in_progress: number; closed: number; categories: { category: TicketCategory | null; _count: { _all: number } }[]; recent: Ticket[] }>('/dashboard/summary'),
   tickets: (params: URLSearchParams) => request<{ data: Ticket[]; meta: { page: number; limit: number; total: number; total_pages: number } }>(`/tickets?${params}`),
   ticket: (id: string) => request<Ticket>(`/tickets/${id}`),
   updateStatus: (id: string, status: TicketStatus) => request<Ticket>(`/tickets/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) }),
   users: () => request<TeamUser[]>('/users'),
   createUser: (input: { name: string; email: string; password: string; role: 'agent' | 'admin' }) => request<TeamUser>('/users', { method: 'POST', body: JSON.stringify(input) }),
+  updateUser: (id: string, input: Partial<{ name: string; email: string; password: string; role: 'agent' | 'admin' }>) => request<TeamUser>(`/users/${id}`, { method: 'PATCH', body: JSON.stringify(input) }),
+  deleteUser: (id: string) => request<{ ok: boolean }>(`/users/${id}`, { method: 'DELETE' }),
+  organization: () => request<OrganizationSettings>('/organizations/me'),
+  updateOrganization: (name: string) => request<OrganizationSettings>('/organizations/me', { method: 'PATCH', body: JSON.stringify({ name }) }),
+  rotateApiKey: () => request<{ id: string; name: string; apiKey: string; warning: string }>('/organizations/me/api-key/rotate', { method: 'POST' }),
 };
