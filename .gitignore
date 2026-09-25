@@ -9,3 +9,5 @@ coverage/
 .idea/
 .vscode/
 api/prisma/dev.db
+__pycache__/
+*.egg-info/
