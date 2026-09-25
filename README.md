@@ -66,7 +66,7 @@ The organization API key is used with the `x-api-key` header for integration end
 - Health checks, Swagger/OpenAPI documentation, Docker Compose deployment, and CI validation.
 - Admin organization settings, one-time API-key rotation, profile view, and user role management.
 - OpenAPI-driven, same-origin API Playground with in-memory credentials and JSON validation.
-- Optional dependency-free Python NLP utility for offline category classification and email/phone extraction.
+- Dependency-free Python NLP fallback for category classification and email/phone extraction.
 
 ## Architecture
 
@@ -180,6 +180,26 @@ For each new ticket:
 The production prompt is deliberately narrow: the model receives the ticket subject and message as untrusted text and is asked to return only a JSON object with `category` and `suggestedReply`. This keeps the persisted result predictable and avoids letting ticket text redefine the task. The Kenari deployment uses the OpenAI-compatible adapter because its `/v1` contract matches the provider interface while retaining the same Zod validation and failure behavior. If configuration, network access, provider retries, or output validation fail, the API invokes `python -m goodevadesk_nlp` with the same ticket text. The Python result supplies the category and the API adds a deterministic acknowledgement reply, so ticket intake remains available without hiding the provider failure.
 
 The cache key is based on the normalized subject and message, not on a customer identity. The default cache TTL is 2,592,000 seconds (30 days) and can be changed with `CACHE_TTL_SECONDS`.
+
+### Python fallback
+
+The API container includes Python 3 and the `goodevadesk_nlp` package. The fallback is enabled by default and runs only when the configured LLM cannot produce a valid analysis. It performs deterministic keyword classification, extracts email and phone entities, and returns one of `billing`, `technical`, or `general`. The API then creates a short acknowledgement reply and persists the same `category` and `suggestedReply` fields used by the LLM path.
+
+Fallback sequence:
+
+```text
+ticket persisted → LLM attempt/retries → Python NLP fallback → Redis cache → enriched ticket
+```
+
+Run the fallback locally:
+
+```powershell
+python -m pip install -e "./python[test]"
+python -m goodevadesk_nlp --subject "Payment failed" --message "Contact customer@example.com"
+python -m pytest python/tests
+```
+
+Set `PYTHON_NLP_ENABLED=false` to disable it. `PYTHON_BIN` selects the interpreter and `PYTHON_NLP_TIMEOUT_MS` prevents a slow local process from blocking ticket intake. The fallback reply is intentionally generic; it preserves availability and a valid category, while the provider-backed LLM remains responsible for personalized suggested replies when available.
 
 ## Local development
 
