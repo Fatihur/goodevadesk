@@ -1,12 +1,38 @@
+<div align="center">
+
 # GoodevaDesk
 
-GoodevaDesk is a multi-tenant customer-support ticketing system for receiving support tickets, enriching them with an LLM, and managing them through an authenticated operations dashboard.
+### AI-assisted customer support operations
 
-- **Production:** https://goodevadesk.fatihur.web.id
-- **Repository:** https://github.com/Fatihur/goodevadesk
-- **API documentation:** https://goodevadesk.fatihur.web.id/api/docs
+Receive tickets, classify them automatically, generate suggested replies, and manage the entire support workflow from one focused dashboard.
 
-## What is implemented
+[![CI](https://github.com/Fatihur/goodevadesk/actions/workflows/ci.yml/badge.svg)](https://github.com/Fatihur/goodevadesk/actions/workflows/ci.yml)
+[![Production](https://img.shields.io/website?url=https%3A%2F%2Fgoodevadesk.fatihur.web.id)](https://goodevadesk.fatihur.web.id)
+[![Node.js](https://img.shields.io/badge/Node.js-22%2B-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
+[![NestJS](https://img.shields.io/badge/NestJS-API-E0234E?logo=nestjs&logoColor=white)](https://nestjs.com/)
+[![React](https://img.shields.io/badge/React-dashboard-61DAFB?logo=react&logoColor=111827)](https://react.dev/)
+
+[Live application](https://goodevadesk.fatihur.web.id) · [Swagger API](https://goodevadesk.fatihur.web.id/api/docs) · [GitHub repository](https://github.com/Fatihur/goodevadesk)
+
+</div>
+
+> GoodevaDesk is a multi-tenant customer-support ticketing system built for reliable ticket intake, AI enrichment, and day-to-day support operations.
+
+## Contents
+
+- [Highlights](#highlights)
+- [Architecture](#architecture)
+- [API overview](#api-overview)
+- [LLM and cache behavior](#llm-and-cache-behavior)
+- [Local development](#local-development)
+- [Environment variables](#environment-variables)
+- [Docker Compose](#docker-compose)
+- [Production deployment](#production-deployment)
+- [Quality checks](#quality-checks)
+- [Security notes](#security-notes)
+- [Current limitations](#current-limitations)
+
+## Highlights
 
 - Ticket intake API for external integrations.
 - Tenant isolation using organization API keys.
@@ -44,6 +70,17 @@ The repository is an npm workspace:
 - `api` — NestJS, Prisma, authentication, ticket and dashboard APIs.
 - `web` — React, Vite, React Router, and the operations dashboard.
 - `deploy/nginx` — Nginx configuration templates used by the VPS deployment.
+
+### Stack at a glance
+
+| Layer | Technology | Responsibility |
+| --- | --- | --- |
+| Frontend | React + Vite | Ticket dashboard and team operations |
+| Backend | NestJS + TypeScript | Authentication, tickets, dashboard, and integrations |
+| Data | PostgreSQL + Prisma | Tenants, users, sessions, and tickets |
+| Cache | Redis | Exact-match LLM enrichment cache |
+| AI | OpenAI-compatible provider | Ticket category and suggested reply |
+| Delivery | Docker Compose + Nginx | Reproducible deployment and HTTPS routing |
 
 ## API overview
 
