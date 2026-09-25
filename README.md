@@ -18,6 +18,10 @@ Receive tickets, classify them automatically, generate suggested replies, and ma
 
 > GoodevaDesk is a multi-tenant customer-support ticketing system built for reliable ticket intake, AI enrichment, and day-to-day support operations.
 
+<p align="center">
+  <img src="docs/dashboard-screenshot.png" alt="GoodevaDesk support operations dashboard" width="100%" />
+</p>
+
 ## Contents
 
 - [Highlights](#highlights)
