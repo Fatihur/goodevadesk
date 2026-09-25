@@ -1,3 +1,6 @@
+jest.mock('node:child_process', () => ({ execFile: jest.fn() }));
+
+import { execFile } from 'node:child_process';
 import { LlmService } from './llm.service';
 
 describe('LlmService', () => {
@@ -6,15 +9,18 @@ describe('LlmService', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    (execFile as unknown as jest.Mock).mockImplementation((_command: string, _args: string[], _options: unknown, callback: (error: null, result: { stdout: string; stderr: string }) => void) => callback(null, { stdout: JSON.stringify({ category: 'billing' }), stderr: '' }));
+    process.env.PYTHON_NLP_ENABLED = 'true';
     delete process.env.AI_BASE_URL;
     delete process.env.AI_API_KEY;
     delete process.env.AI_MODEL;
   });
 
-  it('keeps enrichment optional when provider configuration is absent', async () => {
+  it('uses Python NLP fallback when provider configuration is absent', async () => {
     redis.get.mockResolvedValue(null);
-    await expect(service.analyze('Payment failed', 'The charge is missing')).resolves.toBeNull();
-    expect(redis.set).not.toHaveBeenCalled();
+    await expect(service.analyze('Payment failed', 'The charge is missing')).resolves.toEqual(expect.objectContaining({ category: 'billing', suggestedReply: expect.any(String) }));
+    expect(execFile).toHaveBeenCalled();
+    expect(redis.set).toHaveBeenCalled();
   });
 
   it('returns only valid cached analysis', async () => {
@@ -24,6 +30,6 @@ describe('LlmService', () => {
 
   it('ignores malformed cached analysis', async () => {
     redis.get.mockResolvedValue(JSON.stringify({ category: 'unknown', suggestedReply: '' }));
-    await expect(service.analyze('Payment failed', 'The charge is missing')).resolves.toBeNull();
+    await expect(service.analyze('Payment failed', 'The charge is missing')).resolves.toEqual(expect.objectContaining({ category: 'billing' }));
   });
 });

@@ -1,6 +1,6 @@
 # Optional Python NLP
 
-This small, dependency-free module is a value-add for offline ticket triage. It extracts email/phone entities and applies a deterministic keyword classifier for `billing`, `technical`, and `general` tickets. The production API keeps its provider-backed LLM enrichment path; this module can be used for local evaluation, fallback experiments, or batch analysis without network access.
+This small, dependency-free module is a deterministic fallback for ticket triage. It extracts email/phone entities and applies a keyword classifier for `billing`, `technical`, and `general` tickets. The production API invokes it when the configured LLM is unavailable, while it can also be used for local evaluation or batch analysis without network access.
 
 ```powershell
 python -m pip install -e ".[test]"

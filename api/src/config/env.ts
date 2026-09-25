@@ -19,6 +19,9 @@ const envSchema = z.object({
   CORS_ORIGIN: z.string().min(1).default('http://localhost:5173'),
   BODY_LIMIT: z.string().min(1).default('100kb'),
   RATE_LIMIT_MAX: z.coerce.number().int().min(1).default(60),
+  PYTHON_NLP_ENABLED: z.enum(['true', 'false']).default('true'),
+  PYTHON_BIN: z.string().default(''),
+  PYTHON_NLP_TIMEOUT_MS: z.coerce.number().int().min(100).max(10000).default(2000),
 }).passthrough();
 
 export function validateEnv(input: Record<string, unknown>) {
