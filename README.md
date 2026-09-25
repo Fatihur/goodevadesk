@@ -32,6 +32,20 @@ Receive tickets, classify them automatically, generate suggested replies, and ma
 - [Security notes](#security-notes)
 - [Current limitations](#current-limitations)
 
+## Submission access
+
+The following demo access is intentionally documented for evaluator testing:
+
+| Access | Value |
+| --- | --- |
+| Application | [goodevadesk.fatihur.web.id](https://goodevadesk.fatihur.web.id) |
+| Dashboard email | `admin@goodevadesk.id` |
+| Dashboard password | `Goodeva123!` |
+| Organization API key | `gd_a9b0d1b7c5c417fd3e0c4555a5b957dd33e7d29c0f20bbc4` |
+| Swagger docs | [goodevadesk.fatihur.web.id/api/docs](https://goodevadesk.fatihur.web.id/api/docs) |
+
+The organization API key is used with the `x-api-key` header for integration endpoints. These credentials are provided for this submission environment; rotate them after the evaluation period ends.
+
 ## Highlights
 
 - Ticket intake API for external integrations.
@@ -293,7 +307,7 @@ Current tests cover core API behavior and LLM/cache paths. Add broader integrati
 
 ## Security notes
 
-- Never commit `AI_API_KEY`, database passwords, Redis passwords, session secrets, or production login credentials.
+- Never commit `AI_API_KEY`, database passwords, Redis passwords, `SESSION_SECRET`, or private production credentials. The submission credentials above are intentionally public and must be treated as disposable.
 - Keep production `.env` only on the server or in a dedicated secret manager.
 - Use HTTPS for dashboard and integration traffic.
 - Keep PostgreSQL and Redis private; they should not be exposed directly to the internet.
